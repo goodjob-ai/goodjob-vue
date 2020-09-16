@@ -39,12 +39,10 @@ this.$jobGet('/content/sdk',{mid:'您的mid'}).then(res=>{
 3. 将多语言数据放入对应的语言包文件，参考I18n国际化设置（数据处理可使用功能扩展）。
 
 ## 全局使用自定义多语言（国际化设置）
-
-1. 创建多语言需要的文件(如en),并在main.js中注册。
 >国际化设置请参照 [element国际化 I18n](https://element.eleme.cn/#/zh-CN/component/i18n)
 
 
-2. template中使用
+1. template中使用
 ```html
 <template>
     <!-- HomeTitle为文件自定义的 key -->
@@ -81,3 +79,8 @@ this.$jobGet('/content/sdk',{mid:'您的mid'}).then(res=>{
     })
 
 ```
+
+# 谷歌翻译和多语言冲突解决
+1. 添加`<meta name="google" content="notranslate" />`标签，强制关闭(目前推荐此方式)
+2. 或者采用：页面使用时采用`zw_val` 这个key获取value
+3. 如果有更好的解决方法，还望多指教，谢谢
