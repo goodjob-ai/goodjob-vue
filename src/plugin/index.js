@@ -6,10 +6,19 @@
  * @Description: 初始化sdk配置， 封装处理多语言数据结构方法，全局使用
  * @FilePath: \goodjob-vue\src\plugin\index.js
  */
-let sha256 = require("js-sha256").sha256
-export default {
+const sha256 = require("js-sha256").sha256
+import axios from 'axios'
 
-    install(Vue) {
+/**
+ * 封装get方法
+ * @param url
+ * @param params
+ * @returns {Promise}
+ */
+
+const goodJobVue = {
+    install(Vue,{apiKey, apisecret}) {
+
         /**
          * @description: 
          * @param {config} 
@@ -18,10 +27,16 @@ export default {
          * @return {Object} 设置请求头（apiKey, apisecret， 签名
          */
         
-        Vue.initSDK = function (config, apiKey, apisecret ) {  // 1. 添加全局方法或属性，如:  vue-custom-element
-            // 逻辑...
-            // console.log(config)
-            let {method, url, params} = config
+        //  添加全局方法或属性，如:  vue-custom-element
+        var jobServe = axios.create({
+            baseURL: 'https://api.goodjob.ai',
+            timeout: 50000
+        });
+        jobServe.defaults.headers.get['Content-Type'] = 'application/json; charset=utf-8'
+        
+        // 添加请求拦截器
+        jobServe.interceptors.request.use( config => {
+            let { url, params} = config
             let signParams = ''
             let time= parseInt(+new Date() /1000).toString()
             for (let key in params) {
@@ -31,17 +46,63 @@ export default {
             }
             let signValue = ''
             if(signParams.slice(1)) {
-                signValue = 'token' + method.toUpperCase() + url + '?' + signParams.slice(1) + time
+                signValue = 'tokenGET' + url + '?' + signParams.slice(1) + time
             } else {
-                signValue = 'token' + method.toUpperCase() + url + time
+                signValue = 'tokenGET' + url + time
             }
-            // let signValue = 'tokenGET/contents?mid=10436' + time
-            // console.log(time, signValue, sha256.hmac("cee48ecc-8cc0-4f4d-aee1-cb93caeea408", signValue))
-          return config.headers.common = {
+            config.headers.common = {
                 apiKey, // apiKey
                 'timestamp': time,
                 'sign': sha256.hmac(apisecret, signValue) // ApiSecret
             }
+            return config
+            
+            },
+            error => {
+                // Do something with request error
+                Promise.reject(error);
+            }
+        );
+        
+        jobServe.interceptors.response.use(response => {
+                //一些统一code的返回处理
+            if (response.status === 200) {
+                if (!response.data.Code) {
+                    return {code : true , data : response.data.data};
+                } else {
+                  return  Promise.reject({code:response.data.Code ,errMsg:response.data.Msg})
+                }
+            }
+            return response;
+        
+            },
+            error => {
+                if(!error.response) { // 非code错误
+                   let status = error.name; let data = {msg: error.message}
+                    return Promise.reject({code:status, data})
+                } else {
+                    let { status, data } = error.response
+                    return Promise.reject({code:status, data})
+                }
+            }
+        );
+        
+        // 获取接口方法jobGet
+        // Vue.prototype.$jobGet = (url, params) =>{
+        //     return jobGet(url,params)
+        // }
+
+        Vue.prototype.$jobGet = function jobGet(url, params = {}) {
+            return new Promise((resolve,reject) => {
+                jobServe.get(url, {params})
+                    .then(response => {
+                        //返回成功处理  这里传的啥 后续调用的时候 res就是啥
+                        resolve(response); //我们后台所有数据都是放在返回的data里所以这里统一处理了
+                    })
+                    .catch(err => {
+                        reject(err);
+                    })
+            })
         }
 
 
@@ -59,9 +120,14 @@ export default {
                 // flag传入错误的情况
                 let flag = num <1 || typeof num != 'number' || typeof end == 'string' || !Array.isArray(dataList)  ? false : true ;
                 let returnObj = {}
-                dataList.forEach(item=> { returnObj[item.lang] = []})
+                dataList.forEach((item,idx,arr)=> {
+                    // 没数据情况删除元素自身
+                    if(!item.list || !item.list.length ) arr.splice(idx, 1);
+                    returnObj[item.lang.replace(/-/g, '_')] = []
+                })
                 if(flag) {
                     for(let i=0;i<dataList.length;i++){ // 各种语言情况
+                        dataList[i].lang = dataList[i].lang.replace(/-/g, '_')
                         let sliceList = dataList[i].list.filter(el => el.name).slice(start, end) // 获取所需位置后的数据
                         sliceList.forEach(item=> item.zw_val = item.name ) // 防止开启谷歌插件强制翻译的问题，template中可用zw_val取值
                         for(let k=0;k<sliceList.length;k+=num){
@@ -82,3 +148,9 @@ export default {
         }
     }
 }
+
+if (typeof window !== 'undefined' && window.Vue) {
+    window.Vue.use(goodJobVue);
+   }
+
+export default goodJobVue
