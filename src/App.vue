@@ -14,11 +14,11 @@ export default {
   },
   created () {
     // console.log(this.$jobGet('/content/sdk',{mid:'10660'}))
-    // this.$jobGet('/content/sdk',{mid:'10660'}).then(res=> {
-    //   console.log(res)
-    // }).catch(err=> {
-    //   console.log(err)
-    // })
+    this.$jobGet('/content/sdk',{mid:'10660'}).then(res=> {
+      console.log(res)
+    }).catch(err=> {
+      console.log(err)
+    })
   }
 }
 </script>
