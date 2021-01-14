@@ -26,34 +26,48 @@ npm i --s goodjob-vue
 import goodJobSDK from 'goodjob-vue'
 Vue.use(goodJobSDK, { 
   apiKey: '您的apiKey',
-  apisecret: '您的apisecret'
+  apisecret: '您的apisecret',
+  initI18n:['zh-CN','en'], // 此处为要设置的语言数组
+  // initI18n:{ // or对象形式赋值
+  //   en:{},
+  //   'zh-CN':{}
+  // }
  })
-```
-2. 获取多语言数据
-```
-this.$jobGet('/content/sdk',{mid:'您的mid'}).then(res=>{
-    consle.log(res)
+
+//  i18n设置
+
+const i18n = new VueI18n({
+  ...
+  messages: Vue.i18nObj
+  //如果这里有其他本地的文件，将本地和Vue.i18nObj合并,可参考[element国际化](https://element.eleme.cn/#/zh-CN/component/i18n)
+  ...
 })
 
 ```
-3. 将多语言数据放入对应的语言包文件，参考I18n国际化设置（数据处理可使用功能扩展）。
+2. 获取多语言数据并调用Api处理语言数据
+```
+this.$jobGet('/content/sdk',{mid:'您的mid'}).then(res=>{
+    consle.log(res)
+    <!-- 处理语言数据,新增了回调，可查看i18n数据 -->
+    this.$LangObj(多语言模板的key,res).then(i18n=>{
+        console.log(i18n)
+    })
+
+```
 
 ## 全局使用自定义多语言（国际化设置）
->国际化设置请参照 [element国际化 I18n](https://element.eleme.cn/#/zh-CN/component/i18n)
-
 
 1. template中使用
 ```html
 <template>
-    <!-- HomeTitle为文件自定义的 key -->
-    <div>{{$t('HomeTitle[index].zw_val')}}</div>
-    <!-- 或者 使用name可能会和google翻译插件冲突，被强制翻译，可在 index.html 添加<meta name="google" content="notranslate" />标签，强制关闭 -->
-    <div>{{$t('HomeTitle[index].name')}}</div>
+    <div>{{ $t('模板的key.语言的key') }}</div>
+    <!-- 例如： <h1 >{{ $t('test0.0') }}</h1> 或者 <h1 >{{ $t('test0.g_key_0') }}</h1> -->
+
 </template>
 ```
-2. js中使用
+1. js中使用
 ```js
-    this.$t('HomeTitle[index].zw_val')
+    this.$t('模板的key.语言的key')
 ```
 3. 语言切换
 ```js
@@ -63,24 +77,21 @@ this.$jobGet('/content/sdk',{mid:'您的mid'}).then(res=>{
 # 功能扩展
 >组件请求后台数据，调用 `this.$transLangData` 返回页面所需的多语言数据格式
 ```js
+    1: this.$LangArr(this.$t('模板key'),num,start,end)
     /**
-    * @description: 
-    * @param {dataList} 后台多语言的数组数据。
-    * @param {num} 需要的数据结构 ,num必须大于等于1。当num=1时，根据语言种类返回原数据结构;num>1 的时候为一个大数组，大数组包含页面需要循环数组的数据结构，具体打印查看。
-    * @param {start} 原始数据截取，表示从哪个数据开始截取。
-    * @param {end} 原始数据截取，表示从哪个数据截取结束，实际截取 不包含这个数据，只保留前一个，该参数不传时，代表截取到最后一位。
-    * @return {Onject}  返回各个语言种类处理后的数据结构。
-    */
+     * 将多语音对象转换为嵌套层级的数组,除第一个参数都为非必填
+     * @param {*} 
+     * @param {number} [num=1] 要分割成几个对象，不传的时候代表不处理数据
+     * @param {number} [start=0] 截止对象开始的位置，不传的时候从下标0开始
+     * @param {*} end 截止对象结束位置，不传的时候到数组结尾结束
+     * @return {*} 
+     */
 
-    this.$transLangData(resData, num, start, end).then(langData=> {
-        console.log(langData)
-        // 将返回的数据存储在多语言文件夹对应的 key 里面
-        // 如 en.HomeHotJob = langData.en
-    })
+
+    2:'老版本转化多余格式参照master分支 this.$transLangData'
 
 ```
 
 # 谷歌翻译和多语言冲突解决
 1. 添加`<meta name="google" content="notranslate" />`标签，强制关闭(目前推荐此方式)
-2. 或者采用：页面使用时采用`zw_val` 这个key获取value
-3. 如果有更好的解决方法，还望多指教，谢谢
+2. 如果有更好的解决方法，还望多指教，谢谢
