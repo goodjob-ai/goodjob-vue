@@ -3,4 +3,16 @@
     ["env", { "modules": false }],
     "stage-3"
   ]
+  // 解决异步sync await
+  // "plugins": [
+  //   [
+  //     "transform-runtime",
+  //     {
+  //       "helpers": false,
+  //       "polyfill": false,
+  //       "regenerator": true,
+  //       "moduleName": "babel-runtime"
+  //     }
+  //   ]
+  // ]
 }

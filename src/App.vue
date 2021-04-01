@@ -1,6 +1,12 @@
 <template>
   <div id="app">
-    goodjob-vue
+    <!-- <h1>{{ msg }}</h1> -->
+    <h2>Essentiagggggggggggl Links</h2>
+    <h1 class="jb_online" data-jb="test0.g_key_0" > {{ $t('test0.g_key_0') }}</h1>
+    <h1 class="jb_online" data-jb="test0.g_key_10" > {{ $t('test0.g_key_10') }}</h1>
+    <h1 class="jb_online" data-jb="test0.g_key_3" > {{ $t('test0.g_key_3') }}</h1>
+    <h1 class="jb_online" data-jb="test0.g_key_4" > {{ $t('test0.g_key_4') }}</h1>
+    <ToUpdateMid></ToUpdateMid>
   </div>
 </template>
 
@@ -12,10 +18,11 @@ export default {
       msg: 'Welcome to Your Vue.js App'
     }
   },
-  created () {
-    // console.log(this.$jobGet('/content/sdk',{mid:'10660'}))
-    this.$jobGet('/content/sdk',{mid:'10660'}).then(res=> {
-      console.log(res)
+  created(){
+    this.$jobGet('/content/sdk',{mid:'11006'}, 'test0').then(res=> {
+      // this.$LangObj('test0',res).then(r=>{
+        // console.log(res);
+      // })
     }).catch(err=> {
       console.log(err)
     })
@@ -23,31 +30,14 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style>
+/* html,body{
+  margin:0;
+  padding: 0;
+} */
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-
-h1, h2 {
-  font-weight: normal;
-}
-
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-
-a {
-  color: #42b983;
 }
 </style>
